@@ -2,7 +2,7 @@ ARG POSTGRES_VERSION
 FROM postgres:${POSTGRES_VERSION}-alpine
 ARG TARGETARCH
 
-ADD src/install.sh install.sh
+COPY src/install.sh install.sh
 RUN sh install.sh && rm install.sh
 
 ENV POSTGRES_DATABASE=''
@@ -22,9 +22,9 @@ ENV SCHEDULE=''
 ENV PASSPHRASE=''
 ENV BACKUP_KEEP_DAYS=''
 
-ADD src/run.sh run.sh
-ADD src/env.sh env.sh
-ADD src/backup.sh backup.sh
-ADD src/restore.sh restore.sh
+COPY src/run.sh run.sh
+COPY src/env.sh env.sh
+COPY src/backup.sh backup.sh
+COPY src/restore.sh restore.sh
 
 CMD ["sh", "run.sh"]

@@ -29,6 +29,36 @@ if [ -z "$POSTGRES_PASSWORD" ]; then
   exit 1
 fi
 
+if [ -z "$PASSPHRASE" ]; then
+  echo "You need to set the PASSPHRASE environment variable."
+  exit 1
+fi
+
+if [ -z "$S3_ACCESS_KEY_ID" ]; then
+  echo "You need to set the S3_ACCESS_KEY_ID environment variable."
+  exit 1
+fi
+
+if [ -z "$S3_SECRET_ACCESS_KEY" ]; then
+  echo "You need to set the S3_SECRET_ACCESS_KEY environment variable."
+  exit 1
+fi
+
+if [ -z "$S3_REGION" ]; then
+  echo "You need to set the S3_REGION environment variable."
+  exit 1
+fi
+
+if [ -z "$S3_PREFIX" ]; then
+  echo "You need to set the S3_PREFIX environment variable."
+  exit 1
+fi
+
+if [ -z "$BACKUP_KEEP_DAYS" ]; then
+  echo "You need to set the BACKUP_KEEP_DAYS environment variable."
+  exit 1
+fi
+
 if [ -z "$S3_ENDPOINT" ]; then
   aws_args=""
 else
@@ -36,11 +66,7 @@ else
 fi
 
 
-if [ -n "$S3_ACCESS_KEY_ID" ]; then
-  export AWS_ACCESS_KEY_ID=$S3_ACCESS_KEY_ID
-fi
-if [ -n "$S3_SECRET_ACCESS_KEY" ]; then
-  export AWS_SECRET_ACCESS_KEY=$S3_SECRET_ACCESS_KEY
-fi
+export AWS_ACCESS_KEY_ID=$S3_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$S3_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$S3_REGION
 export PGPASSWORD=$POSTGRES_PASSWORD

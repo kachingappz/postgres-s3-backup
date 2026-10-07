@@ -5,26 +5,32 @@ set -o pipefail
 
 source ./env.sh
 
-echo "Creating backup of $POSTGRES_DATABASE database..."
+timestamp=$(date +"%Y-%m-%dT%H:%M:%S")
+s3_uri="s3://${S3_BUCKET}/${S3_PREFIX}/${POSTGRES_DATABASE}_${timestamp}.dump.gpg"
+
+uploaded=no
+cleanup() {
+  if [ "$uploaded" != "yes" ]; then
+    echo "Backup failed, removing truncated upload..."
+    aws $aws_args s3 rm "$s3_uri"
+  fi
+}
+trap cleanup EXIT
+
+# Streamed, so nothing touches the container disk. A stream upload is capped
+# at 10000 parts, so 64MB parts allow dumps up to 640GB.
+aws configure set default.s3.multipart_chunksize 64MB
+
+echo "Streaming backup of $POSTGRES_DATABASE database to $S3_BUCKET..."
 pg_dump --format=custom \
         -h $POSTGRES_HOST \
         -p $POSTGRES_PORT \
         -U $POSTGRES_USER \
         -d $POSTGRES_DATABASE \
         $PGDUMP_EXTRA_OPTS \
-        > db.dump
-
-timestamp=$(date +"%Y-%m-%dT%H:%M:%S")
-s3_uri="s3://${S3_BUCKET}/${S3_PREFIX}/${POSTGRES_DATABASE}_${timestamp}.dump.gpg"
-
-echo "Encrypting backup..."
-rm -f db.dump.gpg
-gpg --symmetric --batch --passphrase "$PASSPHRASE" db.dump
-rm db.dump
-
-echo "Uploading backup to $S3_BUCKET..."
-aws $aws_args s3 cp db.dump.gpg "$s3_uri"
-rm db.dump.gpg
+  | gpg --symmetric --batch --passphrase "$PASSPHRASE" --compress-algo none \
+  | aws $aws_args s3 cp - "$s3_uri"
+uploaded=yes
 
 echo "Backup complete."
 

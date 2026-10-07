@@ -29,6 +29,11 @@ if [ -z "$POSTGRES_PASSWORD" ]; then
   exit 1
 fi
 
+if [ -z "$PASSPHRASE" ]; then
+  echo "You need to set the PASSPHRASE environment variable."
+  exit 1
+fi
+
 if [ -z "$S3_ENDPOINT" ]; then
   aws_args=""
 else

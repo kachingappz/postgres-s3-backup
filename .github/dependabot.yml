@@ -1,0 +1,20 @@
+# Keeps the third-party GitHub Actions we pin to commit SHAs current, so the
+# pins still pick up security fixes. Dependabot is used for nothing else here:
+# the allow list limits it to those pinned actions.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    allow:
+      - dependency-name: docker/build-push-action
+      - dependency-name: docker/login-action
+      - dependency-name: docker/metadata-action
+      - dependency-name: docker/setup-buildx-action
+      - dependency-name: docker/setup-qemu-action
+    groups:
+      third-party-actions:
+        patterns: ["*"]
